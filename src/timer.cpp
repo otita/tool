@@ -40,7 +40,7 @@ namespace otita {
 
 namespace tool {
   
-const char TIMER_KEY_ALL[] = "hoge";
+const char TIMER_KEY_ALL[] = "TIMER_KEY_ALL";
 
 class Timer {
   using time_table = unordered_map<string, pair<clock_t, clock_t> >;
@@ -71,8 +71,8 @@ public:
   }
   void show() {
     for (time_table::iterator it=_time_table.begin(); it!=_time_table.end(); it++) {
-      string key = (it->first==TIMER_KEY_ALL) ? "all" : it->first;
-      cout << key << ": "
+      string name = (it->first==TIMER_KEY_ALL) ? "all" : it->first;
+      cout << name << ": "
            << double(it->second.second)/CLOCKS_PER_SEC << "(s)"
            << endl;
     }
