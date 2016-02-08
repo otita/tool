@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 #include "JSON.h"
 
-#define JSON_HANDLE_EXCEPTION(condition, err_msg) \
+#define JSON_RAISE_EXCEPTION(condition, err_msg) \
 { \
   try { \
     if (!(condition)) { \
@@ -143,7 +143,7 @@ JSON::json_t JSON::type() const {
 }
 
 double JSON::number() const {
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_NUMBER,
     "Exception: JSON::number()\n \
     type must be JSON_NUMBER."
@@ -152,7 +152,7 @@ double JSON::number() const {
 }
 
 bool JSON::boolean() const {
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_BOOLEAN,
     "Exception: JSON::boolean()\n \
     type must be JSON_BOOLEAN."
@@ -161,7 +161,7 @@ bool JSON::boolean() const {
 }
 
 const JSON::json_string &JSON::string() const {
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_STRING,
     "Exception: JSON::string()\n \
     type must be JSON_STRING."
@@ -209,7 +209,7 @@ JSON &JSON::operator [](size_t i) {
     _field.array_ptr = new json_array;
   }
   
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_ARRAY,
     "Exception: JSON::operator [](size_t)\n \
     type must be JSON_ARRAY."
@@ -224,12 +224,12 @@ JSON &JSON::operator [](size_t i) {
 }
 
 const JSON &JSON::operator [](size_t i) const {
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_ARRAY,
     "Exception: JSON::operator [](size_t)\n \
     type must be JSON_ARRAY."
   );
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     i < _field.array_ptr->size(),
     "Exception: JSON::operator [](size_t)\n \
     invalid index."
@@ -243,7 +243,7 @@ JSON &JSON::operator [](const json_string &key) {
     _field.object_ptr = new json_object;
   }
 
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_OBJECT,
     "Exception: JSON::operator [](const json_string &)\n \
     type must be JSON_OBJECT."
@@ -258,7 +258,7 @@ JSON &JSON::operator [](const json_string &key) {
 }
 
 const JSON &JSON::operator [](const json_string &key) const {
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     _type == JSON_OBJECT,
     "Exception: JSON::operator [](const json_string &)\n \
     type must be JSON_OBJECT."
@@ -266,7 +266,7 @@ const JSON &JSON::operator [](const json_string &key) const {
 
   auto it = _field.object_ptr->find(key);
   
-  JSON_HANDLE_EXCEPTION(
+  JSON_RAISE_EXCEPTION(
     it != _field.object_ptr->end(),
     "Exception: JSON::operator [](const json_string &)\n \
     not registered key."
@@ -286,12 +286,9 @@ JSON::~JSON() {
       delete _field.array_ptr;
       break;
     case JSON_OBJECT:
-      for (auto it=_field.object_ptr->begin(); it!=_field.object_ptr->end(); it++) {
-        delete it->second;
+      for (auto it : *_field.object_ptr) {
+        delete it.second;
       }
-//      for (auto it : *_field.object_ptr) {
-//        delete it.second;
-//      }
       delete _field.object_ptr;
       break;
     default:
