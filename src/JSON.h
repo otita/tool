@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 namespace otita {
 
@@ -53,8 +54,8 @@ public:
   JSON(bool);
   JSON(const json_string &);
   JSON(const char []);
-  JSON(const json_array &);
-  JSON(const json_object &);
+  JSON(json_array *);
+  JSON(json_object *);
   JSON(const JSON &);
   json_t type() const;
   double number() const;
