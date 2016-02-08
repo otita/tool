@@ -26,51 +26,55 @@ THE SOFTWARE.
 #ifndef _JSON_H_
 #define _JSON_H_
 
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 namespace otita {
 
 namespace tool {
 
-enum json_t {
-  JSON_NULL,
-  JSON_NUMBER,
-  JSON_BOOLEAN,
-  JSON_STRING,
-  JSON_ARRAY,
-  JSON_OBJECT,
-};
-
-struct JSON {
-  using json_string = ::std::string;
-  using json_array = ::std::vector<json_value>;
-  using json_object = ::std::unordered_map<::std::string, json_value>;
-  union json_field {
-    double number;
-    bool boolean;
-    json_string *string;
-    json_array *array;
-    json_object *object;
-  };
+class JSON {
 public:
-  json_value();
-  json_value(double);
-  json_value(bool);
-  json_value(const json_string &);
-  json_value(const char []);
-  json_value(const json_array &);
-  json_value(const json_object &);
-  json_value(const json_value &);
-  json_type type() const;
+  using json_string = ::std::string;
+  using json_array = ::std::vector<JSON *>;
+  using json_object = ::std::unordered_map<::std::string, JSON *>;
+  enum json_t {
+    JSON_NULL,
+    JSON_NUMBER,
+    JSON_BOOLEAN,
+    JSON_STRING,
+    JSON_ARRAY,
+    JSON_OBJECT,
+  };
+  static JSON parse(const ::std::string &source);
+  JSON();
+  JSON(double);
+  JSON(bool);
+  JSON(const json_string &);
+  JSON(const char []);
+  JSON(const json_array &);
+  JSON(const json_object &);
+  JSON(const JSON &);
+  json_t type() const;
   double number() const;
   bool   boolean() const;
   const json_string &string() const;
-  json_value &operator =(const json_value &other);
-  json_value &operator [](size_t i);
-  const json_value &operator [](size_t i) const;
-  json_value &operator [](const ::std::string &key);
-  const json_value &operator [](const ::std::string &key) const;
-  virtual ~json_value();
+  JSON &operator =(const JSON &other);
+  JSON &operator [](size_t i);
+  const JSON &operator [](size_t i) const;
+  JSON &operator [](const json_string &key);
+  const JSON &operator [](const json_string &key) const;
+  virtual ~JSON();
 private:
-  json_type _type;
+  union json_field {
+    double number;
+    bool boolean;
+    json_string *string_ptr;
+    json_array *array_ptr;
+    json_object *object_ptr;
+  };
+  json_t _type;
   json_field _field;
 };
 
