@@ -139,8 +139,8 @@ JSON::json_t JSON::type() const {
 double JSON::number() const {
   JSON_RAISE_EXCEPTION(
     _type == JSON_NUMBER,
-    "Exception: JSON::number()\n \
-    type must be JSON_NUMBER."
+    "Exception: JSON::number()\n"
+    "type must be JSON_NUMBER."
   );
   return _field.number;
 }
@@ -148,8 +148,8 @@ double JSON::number() const {
 bool JSON::boolean() const {
   JSON_RAISE_EXCEPTION(
     _type == JSON_BOOLEAN,
-    "Exception: JSON::boolean()\n \
-    type must be JSON_BOOLEAN."
+    "Exception: JSON::boolean()\n"
+    "type must be JSON_BOOLEAN."
   );
   return _field.boolean;
 }
@@ -157,8 +157,8 @@ bool JSON::boolean() const {
 const JSON::json_string &JSON::string() const {
   JSON_RAISE_EXCEPTION(
     _type == JSON_STRING,
-    "Exception: JSON::string()\n \
-    type must be JSON_STRING."
+    "Exception: JSON::string()\n"
+    "type must be JSON_STRING."
   );
   return *(_field.string_ptr);
 }
@@ -211,8 +211,8 @@ JSON &JSON::operator [](size_t i) {
   
   JSON_RAISE_EXCEPTION(
     _type == JSON_ARRAY,
-    "Exception: JSON::operator [](size_t)\n \
-    type must be JSON_ARRAY."
+    "Exception: JSON::operator [](size_t)\n"
+    "type must be JSON_ARRAY."
   );
   size_t size = _field.array_ptr->size();
   if (size <= i) {
@@ -226,13 +226,13 @@ JSON &JSON::operator [](size_t i) {
 const JSON &JSON::operator [](size_t i) const {
   JSON_RAISE_EXCEPTION(
     _type == JSON_ARRAY,
-    "Exception: JSON::operator [](size_t)\n \
-    type must be JSON_ARRAY."
+    "Exception: JSON::operator [](size_t)\n"
+    "type must be JSON_ARRAY."
   );
   JSON_RAISE_EXCEPTION(
     i < _field.array_ptr->size(),
-    "Exception: JSON::operator [](size_t)\n \
-    invalid index."
+    "Exception: JSON::operator [](size_t)\n"
+    "invalid index."
   );
   return *(*_field.array_ptr)[i];
 }
@@ -245,8 +245,8 @@ JSON &JSON::operator [](const json_string &key) {
 
   JSON_RAISE_EXCEPTION(
     _type == JSON_OBJECT,
-    "Exception: JSON::operator [](const json_string &)\n \
-    type must be JSON_OBJECT."
+    "Exception: JSON::operator [](const json_string &)\n"
+    "type must be JSON_OBJECT."
   );
   
   auto it = _field.object_ptr->find(key);
@@ -268,8 +268,8 @@ const JSON &JSON::operator [](const json_string &key) const {
   
   JSON_RAISE_EXCEPTION(
     it != _field.object_ptr->end(),
-    "Exception: JSON::operator [](const json_string &)\n \
-    not registered key."
+    "Exception: JSON::operator [](const json_string &)\n"
+    "not registered key."
   );
   return *(it->second);
 }
