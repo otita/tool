@@ -32,14 +32,8 @@ THE SOFTWARE.
 
 #define JSON_RAISE_EXCEPTION(condition, err_msg) \
 { \
-  try { \
-    if (!(condition)) { \
-      throw logic_error(err_msg); \
-    } \
-  } \
-  catch (const logic_error &error) { \
-    cerr << error.what() << endl; \
-    throw; \
+  if (!(condition)) { \
+    throw logic_error(err_msg); \
   } \
 }
 
