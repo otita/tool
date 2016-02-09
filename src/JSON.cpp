@@ -52,22 +52,22 @@ namespace tool {
 class JSON_Parser {
 public:
   JSON_Parser(const string &source);
-  JSON parse();
+  JSON *parse();
 private:
   unsigned long long _at;
   unsigned char _ch;
   const string &_text;
   unsigned char _next(unsigned char c  = 0);
-  JSON _number();
-  JSON _string();
+  JSON *_number();
+  JSON *_string();
   void _white();
-  JSON _word();
-  JSON _array();
-  JSON _object();
-  JSON _value();
+  JSON *_word();
+  JSON *_array();
+  JSON *_object();
+  JSON *_value();
 };
 
-JSON JSON::parse(const ::std::string &source) {
+JSON *JSON::parse(const ::std::string &source) {
   return JSON_Parser(source).parse();
 }
 
@@ -175,9 +175,15 @@ JSON &JSON::operator =(const JSON &other) {
       delete _field.string_ptr;
       break;
     case JSON_ARRAY:
+      for (JSON *json_ptr : *_field.array_ptr) {
+        delete json_ptr;
+      }
       delete _field.array_ptr;
       break;
     case JSON_OBJECT:
+      for (auto pair : *_field.object_ptr) {
+        delete pair.second;
+      }
       delete _field.object_ptr;
     default: ;
   }
@@ -317,11 +323,11 @@ JSON_Parser::JSON_Parser(const string &source) : _text(source) {
   _ch = ' ';
 }
 
-JSON JSON_Parser::parse() {
-  JSON result = _value();
+JSON *JSON_Parser::parse() {
+  JSON *result = _value();
   if (_ch) {
     // syntax error
-    return JSON();
+    return nullptr;
   }
   return result;
 }
@@ -334,7 +340,7 @@ unsigned char JSON_Parser::_next(unsigned char c) {
   return _ch;
 }
 
-JSON JSON_Parser::_number() {
+JSON *JSON_Parser::_number() {
   string str = "";
   if (_ch == '-') {
     str = _ch;
@@ -366,16 +372,16 @@ JSON JSON_Parser::_number() {
       _next();
     }
   }
-  return atof(str.c_str());
+  return new JSON(atof(str.c_str()));
 }
 
-JSON JSON_Parser::_string() {
+JSON *JSON_Parser::_string() {
   string str = "";
   if (_ch == '"') {
     while (_next()) {
       if (_ch == '"') {
         _next();
-        return str;
+        return new JSON(str.c_str());
       }
       else if (_ch == '\\') {
         _next();
@@ -393,7 +399,7 @@ JSON JSON_Parser::_string() {
       }
     }
   }
-  return "error";
+  return nullptr;
 }
   
 void JSON_Parser::_white() {
@@ -402,14 +408,14 @@ void JSON_Parser::_white() {
   }
 }
 
-JSON JSON_Parser::_word() {
+JSON *JSON_Parser::_word() {
   switch (_ch) {
     case 't':
       _next('t');
       _next('r');
       _next('u');
       _next('e');
-      return true;
+      return new JSON(true);
       break;
     case 'f':
       _next('f');
@@ -417,23 +423,23 @@ JSON JSON_Parser::_word() {
       _next('l');
       _next('s');
       _next('e');
-      return false;
+      return new JSON(false);
       break;
     case 'n':
       _next('n');
       _next('u');
       _next('l');
       _next('l');
-      return JSON();
+      return new JSON();
       break;
     default:
       break;
   }
   // unexpected char
-  return JSON();
+  return nullptr;
 }
 
-JSON JSON_Parser::_array() {
+JSON *JSON_Parser::_array() {
   JSON::json_array *array_ptr = new JSON::json_array;
   
   if (_ch == '[') {
@@ -441,24 +447,24 @@ JSON JSON_Parser::_array() {
     _white();
     if (_ch == ']') {
       _next(']');
-      return array_ptr;
+      return new JSON(array_ptr);
     }
     while (_ch) {
       array_ptr->push_back(new JSON(_value()));
       _white();
       if (_ch == ']') {
         _next(']');
-        return array_ptr;
+        return new JSON(array_ptr);
       }
       _next(',');
       _white();
     }
   }
   // bad array
-  return JSON();
+  return nullptr;
 }
 
-JSON JSON_Parser::_object() {
+JSON *JSON_Parser::_object() {
   JSON::json_object *object_ptr = new JSON::json_object;
   
   if (_ch == '{') {
@@ -466,27 +472,29 @@ JSON JSON_Parser::_object() {
     _white();
     if (_ch == '}') {
       _next('}');
-      return object_ptr;
+      return new JSON(object_ptr);
     }
     while (_ch) {
-      string key = _string().string();
+      JSON *json_key = _string();
+      string key = json_key->string();
+      delete json_key;
       _white();
       _next(':');
-      object_ptr->insert(make_pair(key, new JSON(_value())));
+      object_ptr->insert(make_pair(key, _value()));
       _white();
       if (_ch == '}') {
         _next('}');
-        return object_ptr;
+        return new JSON(object_ptr);
       }
       _next(',');
       _white();
     }
   }
   // bad object
-  return JSON();
+  return nullptr;
 }
   
-JSON JSON_Parser::_value() {
+JSON *JSON_Parser::_value() {
   _white();
   switch (_ch) {
     case '{':

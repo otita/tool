@@ -48,7 +48,7 @@ public:
     JSON_ARRAY,
     JSON_OBJECT,
   };
-  static JSON parse(const ::std::string &source);
+  static JSON *parse(const ::std::string &source);
   JSON();
   JSON(double);
   JSON(bool);
