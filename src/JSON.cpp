@@ -132,35 +132,32 @@ JSON::JSON(const JSON &other) {
   }
 }
 
-JSON::json_t JSON::type() const {
-  return _type;
-}
-
-double JSON::number() const {
-  JSON_RAISE_EXCEPTION(
-    _type == JSON_NUMBER,
-    "Exception: JSON::number()\n"
-    "type must be JSON_NUMBER."
-  );
-  return _field.number;
-}
-
-bool JSON::boolean() const {
-  JSON_RAISE_EXCEPTION(
-    _type == JSON_BOOLEAN,
-    "Exception: JSON::boolean()\n"
-    "type must be JSON_BOOLEAN."
-  );
-  return _field.boolean;
-}
-
-const JSON::json_string &JSON::string() const {
-  JSON_RAISE_EXCEPTION(
-    _type == JSON_STRING,
-    "Exception: JSON::string()\n"
-    "type must be JSON_STRING."
-  );
-  return *(_field.string_ptr);
+JSON::JSON(JSON &&other) {
+  _type = other._type;
+  switch (_type) {
+    case JSON_NULL:
+      break;
+    case JSON_NUMBER:
+      _field.number = other.number();
+      break;
+    case JSON_BOOLEAN:
+      _field.boolean = other.boolean();
+      break;
+    case JSON_STRING:
+      _field.string_ptr = other._field.string_ptr;
+      other._field.string_ptr = nullptr;
+      break;
+    case JSON_ARRAY:
+      _field.array_ptr = other._field.array_ptr;
+      other._field.array_ptr = nullptr;
+      break;
+    case JSON_OBJECT:
+      _field.object_ptr = other._field.object_ptr;
+      other._field.object_ptr = nullptr;
+      break;
+    default:
+      break;
+  }
 }
 
 JSON &JSON::operator =(const JSON &other) {
@@ -203,6 +200,49 @@ JSON &JSON::operator =(const JSON &other) {
   return *this;
 }
 
+JSON &JSON::operator=(JSON &&other) {
+  switch (_type) {
+    case JSON_STRING:
+      delete _field.string_ptr;
+      break;
+    case JSON_ARRAY:
+      for (JSON *json_ptr : *_field.array_ptr) {
+        delete json_ptr;
+      }
+      delete _field.array_ptr;
+      break;
+    case JSON_OBJECT:
+      for (auto pair : *_field.object_ptr) {
+        delete pair.second;
+      }
+      delete _field.object_ptr;
+    default: ;
+  }
+  
+  _type = other._type;
+  switch (_type) {
+    case JSON_NUMBER:
+      _field.number = other._field.number;
+      break;
+    case JSON_BOOLEAN:
+      _field.boolean = other._field.boolean;
+      break;
+    case JSON_STRING:
+      _field.string_ptr = other._field.string_ptr;
+      other._field.string_ptr = nullptr;
+      break;
+    case JSON_ARRAY:
+      _field.array_ptr = other._field.array_ptr;
+      other._field.array_ptr = nullptr;
+      break;
+    case JSON_OBJECT:
+      _field.object_ptr = other._field.object_ptr;
+      other._field.object_ptr = nullptr;
+    default: ;
+  }
+  return *this;
+}
+
 JSON &JSON::operator [](size_t i) {
   if (_type==JSON_NULL) {
     _type = JSON_ARRAY;
@@ -228,7 +268,7 @@ const JSON &JSON::operator [](size_t i) const {
     _type == JSON_ARRAY,
     "Exception: JSON::operator [](size_t)\n"
     "type must be JSON_ARRAY."
-  );
+                       );
   JSON_RAISE_EXCEPTION(
     i < _field.array_ptr->size(),
     "Exception: JSON::operator [](size_t)\n"
@@ -242,7 +282,7 @@ JSON &JSON::operator [](const json_string &key) {
     _type = JSON_OBJECT;
     _field.object_ptr = new json_object;
   }
-
+  
   JSON_RAISE_EXCEPTION(
     _type == JSON_OBJECT,
     "Exception: JSON::operator [](const json_string &)\n"
@@ -260,10 +300,10 @@ JSON &JSON::operator [](const json_string &key) {
 const JSON &JSON::operator [](const json_string &key) const {
   JSON_RAISE_EXCEPTION(
     _type == JSON_OBJECT,
-    "Exception: JSON::operator [](const json_string &)\n \
-    type must be JSON_OBJECT."
+    "Exception: JSON::operator [](const json_string &)\n"
+    "type must be JSON_OBJECT."
   );
-
+  
   auto it = _field.object_ptr->find(key);
   
   JSON_RAISE_EXCEPTION(
@@ -294,6 +334,37 @@ JSON::~JSON() {
     default:
       break;
   }
+}
+
+JSON::json_t JSON::type() const {
+  return _type;
+}
+
+double JSON::number() const {
+  JSON_RAISE_EXCEPTION(
+    _type == JSON_NUMBER,
+    "Exception: JSON::number()\n"
+    "type must be JSON_NUMBER."
+  );
+  return _field.number;
+}
+
+bool JSON::boolean() const {
+  JSON_RAISE_EXCEPTION(
+    _type == JSON_BOOLEAN,
+    "Exception: JSON::boolean()\n"
+    "type must be JSON_BOOLEAN."
+  );
+  return _field.boolean;
+}
+
+const JSON::json_string &JSON::string() const {
+  JSON_RAISE_EXCEPTION(
+    _type == JSON_STRING,
+    "Exception: JSON::string()\n"
+    "type must be JSON_STRING."
+  );
+  return *(_field.string_ptr);
 }
 
 struct escape_pair {

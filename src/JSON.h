@@ -57,16 +57,18 @@ public:
   JSON(json_array *);
   JSON(json_object *);
   JSON(const JSON &);
-  json_t type() const;
-  double number() const;
-  bool   boolean() const;
-  const json_string &string() const;
+  JSON(JSON &&) noexcept;
   JSON &operator =(const JSON &other);
+  JSON &operator =(JSON &&other);
   JSON &operator [](size_t i);
   const JSON &operator [](size_t i) const;
   JSON &operator [](const json_string &key);
   const JSON &operator [](const json_string &key) const;
   virtual ~JSON();
+  json_t type() const;
+  double number() const;
+  bool   boolean() const;
+  const json_string &string() const;
 private:
   union json_field {
     double number;
