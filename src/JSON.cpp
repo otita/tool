@@ -132,7 +132,7 @@ JSON::JSON(const JSON &other) {
   }
 }
 
-JSON::JSON(JSON &&other) {
+JSON::JSON(JSON &&other) noexcept {
   _type = other._type;
   switch (_type) {
     case JSON_NULL:
